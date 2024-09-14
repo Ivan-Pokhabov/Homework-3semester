@@ -1,0 +1,14 @@
+name: Build
+on: [push, pull_request]
+jobs:
+    build-Ubuntu:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: '8.x'
+            - name: Build
+              run: for f in $(find . -name "*.sln"); do dotnet build $f; done
+            - name: Run tests
+              run: for f in $(find . -name "*.sln"); do dotnet test $f; done
