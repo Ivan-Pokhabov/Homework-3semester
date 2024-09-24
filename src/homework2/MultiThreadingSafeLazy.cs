@@ -1,13 +1,19 @@
 namespace homework2;
 
+/// <summary>
+/// Implementation of ILazy interface that safe for multi-threading.
+/// </summary>
+/// <typeparam name="T">Supplier result type.</typeparam>
+/// <param name="supplier">Function that we evaluate.</param>
 public class MultiThreadingSafeLazy<T>(Func<T> supplier) : ILazy<T>
 {
-    private bool wasСalculate = false;
     private readonly Func<T> supplier = supplier;
+    private readonly object locker = new ();
+    private bool wasСalculate = false;
     private Exception? supplierException;
     private T? value;
-    private readonly object locker = new();
 
+    /// <inheritdoc/>
     public T? Get()
     {
         if (wasСalculate)

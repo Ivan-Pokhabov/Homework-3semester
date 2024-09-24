@@ -1,5 +1,10 @@
 namespace homework2;
 
+/// <summary>
+/// Simple implementation of ILazy interface that not safe for multi-threading.
+/// </summary>
+/// <typeparam name="T">Supplier result type.</typeparam>
+/// <param name="supplier">Function that we evaluate.</param>
 public class SimpleLazy<T>(Func<T> supplier) : ILazy<T>
 {
     private bool wasСalculate = false;
@@ -7,6 +12,7 @@ public class SimpleLazy<T>(Func<T> supplier) : ILazy<T>
     private Exception? supplierException;
     private T? value;
 
+    /// <inheritdoc/>
     public T? Get()
     {
         if (wasСalculate)
