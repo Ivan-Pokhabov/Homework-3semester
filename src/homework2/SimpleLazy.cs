@@ -7,8 +7,8 @@ namespace homework2;
 /// <param name="supplier">Function that we evaluate.</param>
 public class SimpleLazy<T>(Func<T> supplier) : ILazy<T>
 {
+    private readonly Func<T> supplier = supplier;
     private bool wasСalculate = false;
-    private Func<T> supplier = supplier;
     private Exception? supplierException;
     private T? value;
 
