@@ -59,7 +59,7 @@ public class MyThreadPool : IDisposable
 
         accessToTasksEvent.WaitOne();
 
-        tasks.Enqueue(new MyTask<TResult>(this, func).Compute);
+        tasks.Enqueue(task.Compute);
         threadWakeUpBeforeCancelEvent.Set();
 
         accessToTasksEvent.Set();
