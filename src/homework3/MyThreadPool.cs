@@ -10,9 +10,9 @@ public class MyThreadPool : IDisposable
     private readonly Thread[] threads;
     private readonly ConcurrentQueue<Action> tasks;
     private readonly CancellationTokenSource cts;
-    private readonly AutoResetEvent accessToTasksEvent;
-    private readonly AutoResetEvent threadWakeUpBeforeCancelEvent;
-    private readonly ManualResetEvent threadWakeUpAfterCancelEvent;
+    private readonly AutoResetEvent access;
+    private readonly AutoResetEvent wakeUpEvent;
+    private readonly ManualResetEvent cancelEvent;
     private int threadsDone;
 
     /// <summary>
@@ -27,9 +27,9 @@ public class MyThreadPool : IDisposable
         }
 
         threadsDone = 0;
-        accessToTasksEvent = new (true);
-        threadWakeUpBeforeCancelEvent = new (false);
-        threadWakeUpAfterCancelEvent = new (false);
+        access = new (true);
+        wakeUpEvent = new (false);
+        cancelEvent = new (false);
         tasks = new ();
         cts = new ();
         tasks = new ();
@@ -47,22 +47,22 @@ public class MyThreadPool : IDisposable
     /// <typeparam name="TResult">Type of task's result.</typeparam>
     /// <param name="func">Task.</param>
     /// <returns>Instance of <see cref="IMytask"/> interface.</returns>
-    /// <exception cref="InvalidOperationException">Thread pool was shut down.</exception>
+    /// <exception cref="OperationCanceledException">Thread pool was shut down.</exception>
     public IMyTask<TResult> Submit<TResult>(Func<TResult> func)
     {
         if (cts.Token.IsCancellationRequested)
         {
-            throw new InvalidOperationException("ThreadPool was shut down");
+            throw new OperationCanceledException("ThreadPool was shut down");
         }
 
         var task = new MyTask<TResult>(this, func);
 
-        accessToTasksEvent.WaitOne();
+        access.WaitOne();
 
         tasks.Enqueue(task.Compute);
-        threadWakeUpBeforeCancelEvent.Set();
+        wakeUpEvent.Set();
 
-        accessToTasksEvent.Set();
+        access.Set();
 
         return task;
     }
@@ -78,7 +78,7 @@ public class MyThreadPool : IDisposable
         }
 
         cts.Cancel();
-        threadWakeUpAfterCancelEvent.Set();
+        cancelEvent.Set();
 
         while (true)
         {
@@ -93,31 +93,31 @@ public class MyThreadPool : IDisposable
     public void Dispose()
     {
         ShutDown();
-        accessToTasksEvent.Dispose();
-        threadWakeUpBeforeCancelEvent.Dispose();
-        threadWakeUpAfterCancelEvent.Dispose();
+        access.Dispose();
+        wakeUpEvent.Dispose();
+        cancelEvent.Dispose();
     }
 
     private void Worker(CancellationToken token)
     {
-        WaitHandle.WaitAny([threadWakeUpAfterCancelEvent, threadWakeUpBeforeCancelEvent]);
+        WaitHandle.WaitAny([cancelEvent, wakeUpEvent]);
         while (true)
         {
-            accessToTasksEvent.WaitOne();
+            access.WaitOne();
             if (tasks.TryDequeue(out var task))
             {
-                accessToTasksEvent.Set();
+                access.Set();
                 task();
             }
             else if (token.IsCancellationRequested)
             {
-                accessToTasksEvent.Set();
+                access.Set();
                 break;
             }
             else
             {
-                accessToTasksEvent.Set();
-                WaitHandle.WaitAny([threadWakeUpAfterCancelEvent, threadWakeUpBeforeCancelEvent]);
+                access.Set();
+                WaitHandle.WaitAny([cancelEvent, wakeUpEvent]);
             }
         }
 
@@ -126,12 +126,12 @@ public class MyThreadPool : IDisposable
 
     private void SubmitContinuation(Action func)
     {
-        accessToTasksEvent.WaitOne();
+        access.WaitOne();
 
         tasks.Enqueue(func);
-        threadWakeUpBeforeCancelEvent.Set();
+        wakeUpEvent.Set();
 
-        accessToTasksEvent.Set();
+        access.Set();
     }
 
     private class MyTask<TResult>(MyThreadPool threadPool, Func<TResult> function) : IMyTask<TResult>
@@ -165,7 +165,7 @@ public class MyThreadPool : IDisposable
         {
             if (threadPool.cts.Token.IsCancellationRequested)
             {
-                throw new InvalidOperationException("Thread pool was shut down");
+                throw new OperationCanceledException("Thread pool was shut down");
             }
 
             if (isCompleted)
