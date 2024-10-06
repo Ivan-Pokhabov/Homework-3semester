@@ -81,33 +81,42 @@ public class LazyTests
     [Test]
     public void MultiThreadingSafeLazy_WithCorrectFunction_ShouldWorkCorrectlyInParallel()
     {
-        var function = () => 1 + 2 * 3;
+        static int function() => 1 + 2 * 3;
         var multiThreadLazy = new MultiThreadingSafeLazy<int>(function);
+        var access = new ManualResetEvent(false);
 
         var processorsCount = Environment.ProcessorCount;
         var threads = new Thread[processorsCount];
         var resultsOfLazyGet = new int[processorsCount];
 
 
-        for (var i = 0; i < processorsCount; i++)
+        for (var _ = 0; _ < 10000; ++_)
         {
-            var local = i;
-            threads[i] = new Thread(() =>
+            for (var i = 0; i < processorsCount; i++)
             {
-                resultsOfLazyGet[local] = multiThreadLazy.Get();
-            });
-            threads[i].Start();
-        }
+                var local = i;
+                threads[i] = new Thread(() =>
+                {
+                    access.WaitOne();
+                    resultsOfLazyGet[local] = multiThreadLazy.Get();
+                });
+                threads[i].Start();
+            }
 
-        foreach (var thread in threads)
-        {
-            thread.Join();
-        }
+            access.Set();
+
+            foreach (var thread in threads)
+            {
+                thread.Join();
+            }
 
 
-        for (var i = 0; i < processorsCount; i++)
-        {
-            Assert.That(resultsOfLazyGet[i], Is.EqualTo(function()));
+            for (var i = 0; i < processorsCount; i++)
+            {
+                Assert.That(resultsOfLazyGet[i], Is.EqualTo(function()));
+            }
+
+            access.Reset();
         }
     }
 }
