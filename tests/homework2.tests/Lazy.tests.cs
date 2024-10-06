@@ -79,6 +79,53 @@ public class LazyTests
     }
 
     [Test]
+    public void Lazy_ShouldUseSupplierOnce()
+    {
+        var x = 0;
+        int function() => x + 1;
+        const int result = 1;
+
+        var multiThreadLazy = new MultiThreadingSafeLazy<int>(function);
+        var access = new ManualResetEvent(false);
+
+        var processorsCount = Environment.ProcessorCount;
+        var threads = new Thread[processorsCount];
+        var resultsOfLazyGet = new int[processorsCount];
+
+
+        for (var _ = 0; _ < 10000; ++_)
+        {
+            for (var i = 0; i < processorsCount; i++)
+            {
+                var local = i;
+                threads[i] = new Thread(() =>
+                {
+                    access.WaitOne();
+                    resultsOfLazyGet[local] = multiThreadLazy.Get();
+                });
+                threads[i].Start();
+            }
+
+            access.Set();
+
+            foreach (var thread in threads)
+            {
+                thread.Join();
+            }
+
+
+            for (var i = 0; i < processorsCount; i++)
+            {
+                Assert.That(resultsOfLazyGet[i], Is.EqualTo(result));
+            }
+
+            access.Reset();
+            x = 0;
+        }
+
+    }
+
+    [Test]
     public void MultiThreadingSafeLazy_WithCorrectFunction_ShouldWorkCorrectlyInParallel()
     {
         static int function() => 1 + 2 * 3;
