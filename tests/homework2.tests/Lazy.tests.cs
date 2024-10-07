@@ -85,7 +85,6 @@ public class LazyTests
         int function() => x + 1;
         const int result = 1;
 
-        var multiThreadLazy = new MultiThreadingSafeLazy<int>(function);
         var access = new ManualResetEvent(false);
 
         var processorsCount = Environment.ProcessorCount;
@@ -95,6 +94,8 @@ public class LazyTests
 
         for (var _ = 0; _ < 10000; ++_)
         {
+            var multiThreadLazy = new MultiThreadingSafeLazy<int>(function);
+
             for (var i = 0; i < processorsCount; i++)
             {
                 var local = i;
@@ -129,7 +130,6 @@ public class LazyTests
     public void MultiThreadingSafeLazy_WithCorrectFunction_ShouldWorkCorrectlyInParallel()
     {
         static int function() => 1 + 2 * 3;
-        var multiThreadLazy = new MultiThreadingSafeLazy<int>(function);
         var access = new ManualResetEvent(false);
 
         var processorsCount = Environment.ProcessorCount;
@@ -139,6 +139,8 @@ public class LazyTests
 
         for (var _ = 0; _ < 10000; ++_)
         {
+            var multiThreadLazy = new MultiThreadingSafeLazy<int>(function);
+
             for (var i = 0; i < processorsCount; i++)
             {
                 var local = i;
