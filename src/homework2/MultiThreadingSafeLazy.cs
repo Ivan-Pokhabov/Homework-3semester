@@ -8,8 +8,8 @@ namespace homework2;
 public class MultiThreadingSafeLazy<T>(Func<T> supplier) : ILazy<T>
 {
     private readonly object locker = new ();
-    private Func<T>? supplier = supplier;
-    private bool wasСalculate = false;
+    private volatile Func<T>? supplier = supplier;
+    private volatile bool wasСalculate = false;
     private volatile Exception? supplierException;
     private volatile object? value;
 
@@ -18,11 +18,13 @@ public class MultiThreadingSafeLazy<T>(Func<T> supplier) : ILazy<T>
     {
         if (wasСalculate)
         {
+            supplier = null;
             return value is null ? default : (T)value;
         }
 
         if (supplierException is not null)
         {
+            supplier = null;
             throw supplierException;
         }
 
@@ -46,7 +48,6 @@ public class MultiThreadingSafeLazy<T>(Func<T> supplier) : ILazy<T>
             try
             {
                 value = supplier();
-                supplier = null;
             }
             catch (Exception e)
             {
