@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "Server\Server.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client", "Client\Client.csproj", "{7F65CBDA-4292-4DD1-8D1E-63B7211A955A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "homework4", "..\..\tests\homework4\homework4.csproj", "{35D59A06-EC64-4908-8138-3241A2E86037}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "homework4.tests", "..\..\tests\homework4.tests\homework4.tests.csproj", "{35D59A06-EC64-4908-8138-3241A2E86037}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
