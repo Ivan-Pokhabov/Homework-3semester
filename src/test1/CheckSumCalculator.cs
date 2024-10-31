@@ -9,7 +9,7 @@ using System.Text;
 public static class CheckSumCalculator
 {
     private static object locker = new ();
-    private static readonly List<byte> Result = [];
+    private static List<byte> Result = [];
 
     /// <summary>
     /// Gets result of calculation.
@@ -21,7 +21,7 @@ public static class CheckSumCalculator
     /// </summary>
     public static void Clear()
     {
-        Result.Clear();
+        Result = new();
     }
 
     /// <summary>
