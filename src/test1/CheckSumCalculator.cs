@@ -17,6 +17,11 @@ public static class CheckSumCalculator
     /// <returns>MD5 hash.</returns>
     public static byte[] Calculate(string path)
     {
+        if (!Directory.Exists(path) && !File.Exists(path))
+        {
+            throw new ArgumentException("Invalid path");
+        }
+
         FileAttributes attribute = File.GetAttributes(path);
         if (attribute.HasFlag(FileAttributes.Directory))
         {
@@ -47,6 +52,11 @@ public static class CheckSumCalculator
     /// <returns>MD5 hash.</returns>
     public static byte[] MultithreadingCalculate(string path)
     {
+        if (!Directory.Exists(path) && !File.Exists(path))
+        {
+            throw new ArgumentException("Invalid path");
+        }
+
         FileAttributes attribute = File.GetAttributes(path);
         if (attribute.HasFlag(FileAttributes.Directory))
         {
