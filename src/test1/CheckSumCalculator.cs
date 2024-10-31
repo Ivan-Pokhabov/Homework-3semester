@@ -86,10 +86,10 @@ public static class CheckSumCalculator
             return;
         }
 
-        using var fileContent = File.Open(path, FileMode.Open);
-        var fileHash = MD5.HashData(fileContent);
         lock (locker)
         {
+            using var fileContent = File.Open(path, FileMode.Open);
+            var fileHash = MD5.HashData(fileContent);
             Result.AddRange(fileHash);
         }
     }
