@@ -8,7 +8,7 @@ using System.Text;
 /// </summary>
 public static class CheckSumCalculator
 {
-    private static List<byte> Result = [];
+    private static readonly List<byte> Result = [];
 
     /// <summary>
     /// Gets result of calculation.
@@ -20,7 +20,7 @@ public static class CheckSumCalculator
     /// </summary>
     public static void Clear()
     {
-        Result = new();
+        Result.Clear();
     }
 
     /// <summary>
