@@ -1,3 +1,5 @@
+namespace test1;
+
 using System.Security.Cryptography;
 using System.Text;
 
@@ -6,7 +8,6 @@ using System.Text;
 /// </summary>
 public static class CheckSumCalculator
 {
-
     private static readonly List<byte> Result = [];
 
     /// <summary>
