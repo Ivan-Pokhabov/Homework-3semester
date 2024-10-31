@@ -8,7 +8,6 @@ using System.Text;
 /// </summary>
 public static class CheckSumCalculator
 {
-    private static object locker = new ();
     private static List<byte> Result = [];
 
     /// <summary>
@@ -73,10 +72,7 @@ public static class CheckSumCalculator
             var entries = Directory.GetFileSystemEntries(path).Order();
             var directory = new DirectoryInfo(path);
             var directoryNameHash = MD5.HashData(Encoding.UTF32.GetBytes(directory.Name));
-            lock (locker)
-            {
-                Result.AddRange(directoryNameHash);
-            }
+            Result.AddRange(directoryNameHash);
 
             foreach (var entry in entries.AsParallel().AsOrdered())
             {
@@ -88,9 +84,6 @@ public static class CheckSumCalculator
 
         using var fileContent = File.Open(path, FileMode.Open);
         var fileHash = MD5.HashData(fileContent);
-        lock (locker)
-        {
-            Result.AddRange(fileHash);
-        }
+        Result.AddRange(fileHash);
     }
 }
