@@ -39,7 +39,7 @@ public static class CheckSumCalculator
         {
             var entries = Directory.GetFileSystemEntries(path).Order();
             var directory = new DirectoryInfo(path);
-            var directoryNameHash = MD5.HashData(Encoding.UTF8.GetBytes(directory.Name));
+            var directoryNameHash = MD5.HashData(Encoding.UTF32.GetBytes(directory.Name));
             Result.AddRange(directoryNameHash);
 
             foreach (var entry in entries)
