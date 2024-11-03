@@ -18,19 +18,12 @@ public class MultiThreadingSafeLazy<T>(Func<T> supplier) : ILazy<T>
     {
         if (wasСalculate)
         {
-            supplier = null;
             return value is null ? default : (T)value;
         }
 
         if (supplierException is not null)
         {
-            supplier = null;
             throw supplierException;
-        }
-
-        if (supplier is null)
-        {
-            throw new InvalidDataException();
         }
 
         lock (locker)
@@ -45,6 +38,11 @@ public class MultiThreadingSafeLazy<T>(Func<T> supplier) : ILazy<T>
                 throw supplierException;
             }
 
+            if (supplier is null)
+            {
+                throw new InvalidDataException();
+            }
+
             try
             {
                 value = supplier();
@@ -55,6 +53,7 @@ public class MultiThreadingSafeLazy<T>(Func<T> supplier) : ILazy<T>
                 throw supplierException;
             }
 
+            supplier = null;
             wasСalculate = true;
             return value is null ? default : (T)value;
         }
