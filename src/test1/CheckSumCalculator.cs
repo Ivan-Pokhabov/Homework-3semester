@@ -48,6 +48,7 @@ public static class CheckSumCalculator
     /// Calculate check-sum using multithreading.
     /// </summary>
     /// <param name="path">Path to entry.</param>
+    /// <returns>MD5 hash.</returns>
     public static byte[] MultithreadingCalculate(string path)
     {
         if (!Directory.Exists(path) && !File.Exists(path))
