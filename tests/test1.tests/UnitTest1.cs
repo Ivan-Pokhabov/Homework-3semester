@@ -6,13 +6,11 @@ public class CheckSumCalculatorTests
     [Test]
     public void MultithreadingCalculate_WithCorrectFolder_ShouldReturnExpectedResult()
     {
-        var path = "../../../";
-        CheckSumCalculator.Calculate(path);
-        var expectedResult = CheckSumCalculator.GetResult;
-        CheckSumCalculator.Clear();
+        var path = "../";
+        var expectedResult = CheckSumCalculator.Calculate(path);
 
-        CheckSumCalculator.MultithreadingCalculate(path);
-        var result = CheckSumCalculator.GetResult;
+
+        var result = CheckSumCalculator.MultithreadingCalculate(path);
 
 
         Assert.That(result, Is.EqualTo(expectedResult));
@@ -22,13 +20,10 @@ public class CheckSumCalculatorTests
     public void MultithreadingCalculate_WithCorrectFile_ShouldReturnExpectedResult()
     {
         var path = "../../../test1.tests.sln";
-        CheckSumCalculator.Calculate(path);
-        var expectedResult = CheckSumCalculator.GetResult;
-        CheckSumCalculator.Clear();
-        
+        var expectedResult = CheckSumCalculator.Calculate(path);
 
-        CheckSumCalculator.MultithreadingCalculate(path);
-        var result = CheckSumCalculator.GetResult;
+
+        var result = CheckSumCalculator.MultithreadingCalculate(path);
 
 
         Assert.That(result, Is.EqualTo(expectedResult));
