@@ -1,10 +1,19 @@
+namespace homework5.Utils;
+
 using System.Reflection;
 using homework5.TestRunner;
 
-namespace homework5.Utils;
-
+/// <summary>
+/// Class for run all test files by path.
+/// </summary>
 public static class MyNUnitUtils
 {
+    /// <summary>
+    /// Method for running all test dlls by path.
+    /// </summary>
+    /// <param name="path">Path to assemblies.</param>
+    /// <returns>Task of test results.</returns>
+    /// <exception cref="ArgumentException">Path should be correct.</exception>
     public static async Task<TestClassResult[]> RunTestsAsync(string path)
     {
         if (!File.Exists(path) && !Directory.Exists(path))

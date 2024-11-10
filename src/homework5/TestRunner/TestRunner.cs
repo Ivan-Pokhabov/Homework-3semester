@@ -1,11 +1,16 @@
+namespace homework5.TestRunner;
+
 using System.Diagnostics;
 using System.Reflection;
 using homework5.Attributes;
 
-namespace homework5.TestRunner;
-
-public record MyTestRunner(Type ClassType, Dictionary<Type, MethodInfo[]> Methods)
+public record MyTestRunner(Type classType, Dictionary<Type, MethodInfo[]> methods)
 {
+    /// <summary>
+    /// Make instance of MyTestRunner by type of test class.
+    /// </summary>
+    /// <param name="classType">Type of test class.</param>
+    /// <returns>MyTestRunner instance.</returns>
     public static MyTestRunner MakeTestByClassType(Type classType)
     {
         var methods = classType.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public);
@@ -19,6 +24,12 @@ public record MyTestRunner(Type ClassType, Dictionary<Type, MethodInfo[]> Method
         return new MyTestRunner(classType, methodTypes);
     }
 
+    /// <summary>
+    /// Run test from class asynchronously.
+    /// </summary>
+    /// <returns>Task with report in record TestClassResullt.</returns>
+    /// <exception cref="InvalidDataException">Methods with BeforeClassAttribute or AfterClassAttribute should be static.</exception>
+    /// <exception cref="InvalidOperationException">Something goes wrong and creating an instance of the class is failed.</exception>
     public async Task<TestClassResult> RunTestsAsync()
     {
         if (!CheckBeforeAndAfterClassAttributesForStatic())
@@ -26,41 +37,47 @@ public record MyTestRunner(Type ClassType, Dictionary<Type, MethodInfo[]> Method
             throw new InvalidDataException("Methods with BeforeClassAttribute or AfterClassAttribute should be static.");
         }
 
-        var obj = Activator.CreateInstance(ClassType) ?? throw new InvalidOperationException("Failed to create an instance of the class.");
+        var obj = Activator.CreateInstance(classType) ?? throw new InvalidOperationException("Failed to create an instance of the class.");
 
-        if (!Methods.ContainsKey(typeof(TestAttribute)))
+        if (!methods.ContainsKey(typeof(TestAttribute)))
         {
-            return new TestClassResult(ClassType, []);
+            return new TestClassResult(classType, []);
         }
 
         await TestMethodsByAttribute(typeof(BeforeClassAttribute), obj);
 
-        var testReports = new TestResult[Methods[typeof(TestAttribute)].Length];
-        var testTasks = new Task[Methods[typeof(TestAttribute)].Length];
-        for (int i = 0; i < Methods[typeof(TestAttribute)].Length; ++i)
+        var testReports = new TestResult[methods[typeof(TestAttribute)].Length];
+        var testTasks = new Task[methods[typeof(TestAttribute)].Length];
+        for (int i = 0; i < methods[typeof(TestAttribute)].Length; ++i)
         {
-            var testMethod = Methods[typeof(TestAttribute)][i];
+            var testMethod = methods[typeof(TestAttribute)][i];
             testTasks[i] = RunTestAsync(testMethod, obj, i, testReports);
         }
 
         await Task.WhenAll(testTasks);
         await TestMethodsByAttribute(typeof(AfterClassAttribute), obj);
 
-        return new TestClassResult(ClassType, testReports);
+        return new TestClassResult(classType, testReports);
     }
 
     private bool CheckBeforeAndAfterClassAttributesForStatic()
     {
         var check = true;
 
-        foreach (var attribute in new Type[] {typeof(BeforeClassAttribute), typeof(AfterClassAttribute)})
+        foreach (var attribute in new Type[] { typeof(BeforeClassAttribute), typeof(AfterClassAttribute) })
         {
-            if (!Methods.TryGetValue(attribute, out MethodInfo[]? value))
+            if (!methods.TryGetValue(attribute, out MethodInfo[]? value))
             {
                 continue;
             }
 
-            Parallel.ForEach(Methods[attribute], (method) => {if (!method.IsStatic) check = false; });
+            Parallel.ForEach(methods[attribute], (method) =>
+            {
+                if (!method.IsStatic)
+                {
+                    check = false;
+                }
+            });
         }
 
         return check;
@@ -81,7 +98,8 @@ public record MyTestRunner(Type ClassType, Dictionary<Type, MethodInfo[]> Method
         catch (Exception e)
         {
             stopwatch.Stop();
-            var attribute = (TestAttribute) Attribute.GetCustomAttribute(testMethod, typeof(TestAttribute))!;
+            var attribute = (TestAttribute)Attribute.GetCustomAttribute(testMethod, typeof(TestAttribute)) !;
+
             testReports[index] = (attribute.ExpectedException == e.GetBaseException().GetType()) ?
             new TestResult(testMethod.Name, true, stopwatch.ElapsedMilliseconds)
             : new TestResult(testMethod.Name, false, -1);
@@ -92,10 +110,9 @@ public record MyTestRunner(Type ClassType, Dictionary<Type, MethodInfo[]> Method
         }
     }
 
-
     private async Task TestMethodsByAttribute(Type attribute, object? obj)
     {
-        if (!Methods.TryGetValue(attribute, out MethodInfo[]? value))
+        if (!methods.TryGetValue(attribute, out MethodInfo[]? value))
         {
             return;
         }
@@ -107,6 +124,6 @@ public record MyTestRunner(Type ClassType, Dictionary<Type, MethodInfo[]> Method
     }
 }
 
-public record TestResult(string MethodName, bool IsSuccess, long Time);
+public record TestResult(string methodName, bool isSuccess, long time);
 
-public record TestClassResult(Type ClassType, TestResult[] Results);
+public record TestClassResult(Type classType, TestResult[] results);

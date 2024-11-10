@@ -1,6 +1,4 @@
-﻿using homework5.Utils;
-
-static void PrintHelp()
+﻿static void PrintHelp()
 {
     Console.WriteLine("""
 
@@ -21,14 +19,14 @@ var path = args[0];
 
 try
 {
-    var result = await MyNUnitUtils.RunTestsAsync(path);
+    var result = await homework5.Utils.MyNUnitUtils.RunTestsAsync(path);
     Parallel.ForEach(result, (reports) =>
     {
-        Console.WriteLine($"Results of test class {reports.ClassType}:");
-        Parallel.ForEach(reports.Results, (report) =>
+        Console.WriteLine($"Results of test class {reports.classType}:");
+        Parallel.ForEach(reports.results, (report) =>
         {
-            var methodSucces = report.IsSuccess ? "succes" : "failed";
-            Console.WriteLine($"Method {report.MethodName} was {methodSucces} with time {report.Time}");
+            var methodSucces = report.isSuccess ? "passed" : "failed";
+            Console.WriteLine($"Method {report.methodName} was {methodSucces} with time {report.time}");
         });
     });
 }
