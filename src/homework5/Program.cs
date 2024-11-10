@@ -26,7 +26,8 @@ try
         Parallel.ForEach(reports.results, (report) =>
         {
             var methodSucces = report.isSuccess ? "passed" : "failed";
-            Console.WriteLine($"Method {report.methodName} was {methodSucces} with time {report.time}");
+            var ignoreMessage = report.ignoreMessage ?? "test was not ignored";
+            Console.WriteLine($"Method {report.methodName} was {methodSucces} with time {report.time}, ignore meaasge : {ignoreMessage}");
         });
     });
 }

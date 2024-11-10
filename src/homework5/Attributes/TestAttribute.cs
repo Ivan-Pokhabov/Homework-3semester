@@ -28,6 +28,16 @@ public class TestAttribute : MyNUnitAttribute
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="TestAttribute"/> class.
+    /// </summary>
+    /// <param name="ignoreMessage">Reason why test should be ignored.</param>
+    public TestAttribute(string? ignoreMessage)
+    {
+        IgnoreMessage = ignoreMessage;
+        ExpectedException = null;
+    }
+
+    /// <summary>
     /// Gets expected exception.
     /// </summary>
     public Type? ExpectedException { get; private set; }

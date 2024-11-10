@@ -87,22 +87,29 @@ public record MyTestRunner(Type classType, Dictionary<Type, MethodInfo[]> method
     {
         await TestMethodsByAttribute(typeof(BeforeAttribute), obj);
         var stopwatch = new Stopwatch();
+        var attribute = (TestAttribute)Attribute.GetCustomAttribute(testMethod, typeof(TestAttribute)) !;
+        if (attribute.IgnoreMessage is not null)
+        {
+            testReports[index] = new TestResult(testMethod.Name, true, 0, attribute.IgnoreMessage);
+            await TestMethodsByAttribute(typeof(AfterAttribute), obj);
+            return;
+        }
+
         stopwatch.Start();
         try
         {
             testMethod.Invoke(obj, null);
             stopwatch.Stop();
 
-            testReports[index] = new TestResult(testMethod.Name, true, stopwatch.ElapsedMilliseconds);
+            testReports[index] = new TestResult(testMethod.Name, true, stopwatch.ElapsedMilliseconds, null);
         }
         catch (Exception e)
         {
             stopwatch.Stop();
-            var attribute = (TestAttribute)Attribute.GetCustomAttribute(testMethod, typeof(TestAttribute)) !;
 
             testReports[index] = (attribute.ExpectedException == e.GetBaseException().GetType()) ?
-            new TestResult(testMethod.Name, true, stopwatch.ElapsedMilliseconds)
-            : new TestResult(testMethod.Name, false, -1);
+            new TestResult(testMethod.Name, true, stopwatch.ElapsedMilliseconds, null)
+            : new TestResult(testMethod.Name, false, -1, null);
         }
         finally
         {
@@ -124,6 +131,6 @@ public record MyTestRunner(Type classType, Dictionary<Type, MethodInfo[]> method
     }
 }
 
-public record TestResult(string methodName, bool isSuccess, long time);
+public record TestResult(string methodName, bool isSuccess, long time, string? ignoreMessage);
 
 public record TestClassResult(Type classType, TestResult[] results);
