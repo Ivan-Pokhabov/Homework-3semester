@@ -25,10 +25,19 @@ try
         Console.WriteLine($"Results of test class {reports.classType}:");
         foreach (var report in reports.results)
         {
-            var methodSucces = report.isSuccess ? "passed" : "failed";
+            var methodSucces = report.testException is null ? "passed" : "failed";
             var ignoreMessage = report.ignoreMessage ?? "test was not ignored";
-            Console.ForegroundColor = report.isSuccess ? (report.ignoreMessage is null ? ConsoleColor.DarkGreen : ConsoleColor.Yellow) : ConsoleColor.Red;
-            Console.WriteLine($"Method {report.methodName} was {methodSucces} with time {report.time}, ignore meaasge : {ignoreMessage}");
+
+            Console.ForegroundColor = report.testException is null ?
+            (report.ignoreMessage is null ?
+            ConsoleColor.DarkGreen
+            : ConsoleColor.Yellow)
+            : ConsoleColor.Red;
+
+            Console.WriteLine($"""
+                        Method {report.methodName} was {methodSucces} with time {report.time}, ignore meaasge : {ignoreMessage}, exception : {report.testException}
+                                
+                        """);
         }
     }
 }
