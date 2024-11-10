@@ -109,7 +109,7 @@ public record MyTestRunner(Type classType, Dictionary<Type, MethodInfo[]> method
 
             testReports[index] = (attribute.ExpectedException == e.GetBaseException().GetType()) ?
             new TestResult(testMethod.Name, true, stopwatch.ElapsedMilliseconds, null)
-            : new TestResult(testMethod.Name, false, -1, null);
+            : new TestResult(testMethod.Name, false, stopwatch.ElapsedMilliseconds, null);
         }
         finally
         {
