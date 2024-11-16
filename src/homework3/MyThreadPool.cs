@@ -8,7 +8,7 @@ using System.Collections.Concurrent;
 public class MyThreadPool : IDisposable
 {
     private readonly Thread[] threads;
-    private readonly ConcurrentQueue<Action> tasks;
+    private readonly Queue<Action> tasks;
     private readonly CancellationTokenSource cts;
     private readonly AutoResetEvent access;
     private readonly AutoResetEvent wakeUpEvent;
@@ -72,13 +72,13 @@ public class MyThreadPool : IDisposable
     /// </summary>
     public void ShutDown()
     {
+        cancelEvent.Set();
         if (cts.Token.IsCancellationRequested)
         {
             return;
         }
 
         cts.Cancel();
-        cancelEvent.Set();
 
         while (true)
         {
