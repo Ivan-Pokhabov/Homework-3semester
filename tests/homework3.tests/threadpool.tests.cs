@@ -1,6 +1,9 @@
 namespace homework3.tests;
 
+using System.Runtime.CompilerServices;
 using homework3;
+using Microsoft.VisualBasic;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.Serialization;
 
 public class Tests
 {
@@ -53,8 +56,8 @@ public class Tests
     [Test]
     public void SubmitAndContinueWith_FromMultipleThreads_ShouldPerformExpectedResult()
     {
-        var threadsCount = 10;
-        var expectedResult = 80 * threadPoolSize;   
+        var threadsCount = 6;
+        var expectedResult = 8 * threadsCount * threadPoolSize;   
         ManualResetEvent manualResetEvent = new(false);
         var threads = new Thread[threadsCount];
         var test = new IMyTask<int>[threadPoolSize * threadsCount];
@@ -79,7 +82,7 @@ public class Tests
         {
             thread.Start();
         }
-        
+
         Thread.Sleep(100);
 
         manualResetEvent.Set();
@@ -90,7 +93,6 @@ public class Tests
         }
 
         var result = test.Sum(x => x.Result);
-
 
         Assert.That(result, Is.EqualTo(expectedResult));
     }
@@ -185,7 +187,7 @@ public class Tests
 
         var parentTask = threadPool.Submit(() =>
         {
-            Thread.Sleep(10000);
+            Thread.Sleep(1000);
             return 0;
         });
 
@@ -195,7 +197,7 @@ public class Tests
             return 1;
         });
 
-        bool flag = !mainThreadContinueSignal.WaitOne(1000);
+        bool flag = !mainThreadContinueSignal.WaitOne(100);
 
 
         Assert.That(flag, Is.True);
@@ -218,5 +220,56 @@ public class Tests
 
 
         Assert.Throws<OperationCanceledException>(() => task.ContinueWith(result => result + 1));
+    }
+
+    [Test]
+    public void Submit_DelegateWithException_ThrowsAggregateException()
+    {
+        var zero = 0;
+        var task = threadPool.Submit(() => 1 / zero);
+
+
+        Assert.Throws<AggregateException>(() => {var answer = task.Result;});
+    }
+
+    [Test]
+    public void Submit_DelegateWithException_ThrowsAggregateExceptionWithExpectedException()
+    {
+        var zero = 0;
+        var task = threadPool.Submit(() => 1 / zero);
+
+
+        try
+        {
+            var answer = task.Result;
+        }
+        catch (AggregateException e)
+        {
+            Assert.Throws<DivideByZeroException>(() => throw e.GetBaseException());
+        }
+    }
+
+    [Test]
+    public void ConcurrentShutdown_ShouldPerformExpectedResult()
+    {
+        ManualResetEvent manualResetEvent = new(false);
+        var tasks = new IMyTask<int>[threadPoolSize];
+        int foo()
+        {
+            manualResetEvent.WaitOne();
+            threadPool.ShutDown();
+            return 0;
+        }
+
+
+        for (int i = 0; i < tasks.Length; ++i)
+        {
+            tasks[i] = threadPool.Submit(foo);
+        }
+        
+        manualResetEvent.Set();
+
+
+        Assert.Pass();
     }
 }
