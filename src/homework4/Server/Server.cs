@@ -14,12 +14,20 @@ public class Server(int port) : IDisposable
 
     private readonly CancellationTokenSource cts = new ();
 
+    private bool isServerStop = false;
+
     /// <summary>
     /// Run server.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the result of the asynchronous operation.</returns>
     public async Task Run()
     {
+        if (isServerStop)
+        {
+            Console.WriteLine("Server was already stoped. Please make new.");
+            return;
+        }
+
         Console.WriteLine("Server started.");
 
         var tasks = new List<Task>();
@@ -29,27 +37,7 @@ public class Server(int port) : IDisposable
         {
             var client = await tcpListener.AcceptTcpClientAsync(cts.Token);
 
-            tasks.Add(Task.Run(
-                async () =>
-                {
-                    using var stream = client.GetStream();
-                    using var reader = new StreamReader(stream);
-                    using var writer = new StreamWriter(stream) { AutoFlush = true };
-
-                    var data = await reader.ReadLineAsync();
-                    if (data != null)
-                    {
-                        if (data[..2] == "1 ")
-                        {
-                            await List(data[2..], writer);
-                        }
-
-                        if (data[..2] == "2 ")
-                        {
-                            await Get(data[2..], writer);
-                        }
-                    }
-                }));
+            tasks.Add(Task.Run(() => MakeRequest(client)));
         }
 
         await Task.WhenAll(tasks);
@@ -60,6 +48,7 @@ public class Server(int port) : IDisposable
     /// </summary>
     public void Stop()
     {
+        isServerStop = true;
         cts.Cancel();
         tcpListener.Stop();
     }
@@ -68,6 +57,27 @@ public class Server(int port) : IDisposable
     public void Dispose()
     {
         tcpListener.Dispose();
+    }
+
+    private static async Task MakeRequest(TcpClient client)
+    {
+        using var stream = client.GetStream();
+        using var reader = new StreamReader(stream);
+        using var writer = new StreamWriter(stream) { AutoFlush = true };
+
+        var data = await reader.ReadLineAsync();
+        if (data != null)
+        {
+            if (data[..2] == "1 ")
+            {
+                await List(data[2..], writer);
+            }
+
+            if (data[..2] == "2 ")
+            {
+                await Get(data[2..], writer);
+            }
+        }
     }
 
     private static async Task Get(string path, StreamWriter writer)
