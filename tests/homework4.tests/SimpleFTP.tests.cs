@@ -2,16 +2,17 @@ namespace FTPTests;
 
 using System.Diagnostics;
 using System.Net;
+using System.Net.Sockets;
 using homework4;
 
 [TestFixture]
 public class Tests
 {
-    private Server server;
+    private Server? server;
 
-    private Client client;
+    private Client? client;
 
-    private IPEndPoint endPoint = new (IPAddress.Loopback, 8888);
+    private readonly IPEndPoint endPoint = new (IPAddress.Loopback, 8888);
 
     [OneTimeSetUp]
     public void Setup()
@@ -25,7 +26,7 @@ public class Tests
     [OneTimeTearDown]
     public void TearDown()
     {
-        server.Stop();
+        server!.Stop();
         server.Dispose();
     }
 
@@ -35,7 +36,7 @@ public class Tests
         var expected = "4 ../../../TestFiles/AlgebraPractice.pdf False ../../../TestFiles/empty.txt False ../../../TestFiles/lol.txt False ../../../TestFiles/sos True\n";
 
 
-        var actual = await client.List("../../../TestFiles");
+        var actual = await client!.List("../../../TestFiles");
 
 
         Assert.That(actual, Is.EqualTo(expected));
@@ -48,7 +49,7 @@ public class Tests
         var expected = "10 Sasha loh\n";
 
 
-        var actual = await client.Get("../../../TestFiles/lol.txt");
+        var actual = await client!.Get("../../../TestFiles/lol.txt");
 
 
         Assert.That(actual, Is.EqualTo(expected));
@@ -63,7 +64,7 @@ public class Tests
         var expected = "-1";
 
 
-        var actual = await client.List("../../../InvalidPath");
+        var actual = await client!.List("../../../InvalidPath");
 
 
         Assert.That(actual, Is.EqualTo(expected));
@@ -75,7 +76,7 @@ public class Tests
         var expected = "-1";
 
 
-        var actual = await client.Get("../../../InvalidPath");
+        var actual = await client!.Get("../../../InvalidPath");
 
 
         Assert.That(actual, Is.EqualTo(expected));
@@ -88,14 +89,14 @@ public class Tests
         var expected = "0 ";
 
 
-        var actual = await client.Get("../../../TestFiles/empty.txt");
+        var actual = await client!.Get("../../../TestFiles/empty.txt");
 
 
         Assert.That(actual, Is.EqualTo(expected));
     }
 
     [Test]
-    public void ManyClientsShouldReturnSameResult()
+    public void ManyClients_WithCorrectRequests_ShouldReturnSameResult()
     {
         const string listPath = "../../../TestFiles";
         const string getPath = "../../..//TestFiles/AlgebraPractice.pdf";
@@ -121,7 +122,7 @@ public class Tests
                 listResults[locali] = await newClient.List(listPath) ?? "Error";
                 using var stream = new MemoryStream();
         
-                getResults[locali] = await client.Get(getPath) ?? "Error";
+                getResults[locali] = await client!.Get(getPath) ?? "Error";
             });
         }
         
@@ -144,5 +145,41 @@ public class Tests
                 Assert.That(getResults[i - 1], Is.EqualTo(getResults[i]));
             });
         }
+    }
+
+    [Test]
+    public async Task ServerList_WithCorrectRequests_ShouldReturnExpectedResult()
+    {
+        var request = "1 ../../../TestFiles";
+        var expected = "4 ../../../TestFiles/AlgebraPractice.pdf False ../../../TestFiles/empty.txt False ../../../TestFiles/lol.txt False ../../../TestFiles/sos True\n";
+        using var newClient = new TcpClient("127.0.0.2", 8888);
+        using var stream = newClient.GetStream();
+        using var writer = new StreamWriter(stream) { AutoFlush = true };
+        using var reader = new StreamReader(stream);
+
+
+        await writer.WriteLineAsync(request);
+        var response = await reader.ReadToEndAsync();
+
+
+        Assert.That(response, Is.EqualTo(expected));
+    }
+
+    [Test]
+    public async Task ServerGet_WithCorrectRequests_ShouldReturnExpectedResult()
+    {
+        var request = "2 ../../../TestFiles/lol.txt";
+        var expected = "10 Sasha loh\n";
+        using var newClient = new TcpClient("127.0.0.2", 8888);
+        using var stream = newClient.GetStream();
+        using var writer = new StreamWriter(stream) { AutoFlush = true };
+        using var reader = new StreamReader(stream);
+
+
+        await writer.WriteLineAsync(request);
+        var response = await reader.ReadToEndAsync();
+
+
+        Assert.That(response, Is.EqualTo(expected));
     }
 }
