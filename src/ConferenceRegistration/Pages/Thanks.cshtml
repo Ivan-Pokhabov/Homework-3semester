@@ -1,0 +1,21 @@
+﻿@page
+
+@model ConferenceRegistration.Pages.ThanksModel
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Thanks</title>
+</head>
+<body>
+    <p>
+        <h1>Thank you, @Model.Participant.Name</h1>
+    </p>
+    <p>
+        @if (Model.Participant.IsSpeaker)
+        {
+            @:Please don't forget to submit your article!
+        }
+    </p>
+</body>
+</html>

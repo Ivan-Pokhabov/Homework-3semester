@@ -1,0 +1,60 @@
+﻿@page
+
+@model ConferenceRegistration.Pages.RegistrationModel
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<html>
+<head>
+        <meta name="viewport" content="width=device-width" />
+        <title>Register</title>
+        <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.css" />
+        <script src="/lib/jquery/dist/jquery.js"></script>
+        <script src="/lib/jquery-validation/dist/jquery.validate.js"></script>
+        <script src="/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+</head>
+<body>
+    <div class="row mb-3 text-center"><h4 class="col-sm-6">Registration form</h4></div>
+    <form asp-action="Register" method="post">
+        <div class="row mb-3">
+            <span asp-validation-for="Participant.Name" class="text-danger"></span>
+            <label class="col-sm-1 col-form-label col-form-label-lg"
+                   asp-for="Participant.Name">Your name:</label>
+            <div class="col-sm-4">
+                <input class="form-control form-control-lg"
+                       asp-for="Participant.Name" />
+            </div>
+        </div>
+        <div class="row mb-3">
+            <span asp-validation-for="Participant.Email" class="text-danger"></span>
+            <label class="col-sm-1 col-form-label col-form-label-lg"
+                   asp-for="Participant.Email">Your email:</label>
+            <div class="col-sm-4">
+                <input class="form-control form-control-lg"
+                       asp-for="Participant.Email" />
+            </div>
+        </div>
+        <div class="row mb-3">
+            <span asp-validation-for="Participant.IsSpeaker" class="text-danger"></span>
+            <label class="col-sm-1 col-form-label col-form-label-lg">
+                Are you a speaker?
+            </label>
+            <div class="col-sm-4">
+                <select class="form-select form-select-lg"
+                        asp-for="Participant.IsSpeaker">
+                    <option value="">Choose an option</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+        </div>
+        <div class="row mb-3 mx-auto">
+            <div class="col-sm-5 d-grid gap-2">
+                <button class="btn btn-primary btn-lg" type="submit">
+                    Register!
+                </button>
+            </div>
+        </div>
+    </form>
+</body>
+</html>
