@@ -98,7 +98,7 @@ public class Reflector
         foreach (var field in fieldInfos)
         {
             var modifiers = field.IsStatic ? "static " : "";
-            Console.WriteLine($"{modifiers}{field.FieldType.Name} {field.Name};");
+            writer.WriteLine($"{modifiers}{field.FieldType.Name} {field.Name};");
         }
     }
 
@@ -106,7 +106,7 @@ public class Reflector
     {
         foreach (var property in propertyInfos)
         {
-            Console.WriteLine($"{property.PropertyType.Name} {property.Name} {{ get; set; }}");
+            writer.WriteLine($"{property.PropertyType.Name} {property.Name} {{ get; set; }}");
         }
     }
 
@@ -115,7 +115,7 @@ public class Reflector
         foreach (var method in methodInfos)
         {
             string modifiers = method.IsStatic ? "static " : "";
-            Console.WriteLine($"{modifiers}{method.ReturnType.Name} {method.Name}({string.Join(", ", GetParameterInfo(method))})" + "{}");
+            writer.WriteLine($"{modifiers}{method.ReturnType.Name} {method.Name}({string.Join(", ", GetParameterInfo(method))})" + "{}");
         }
     }
 
