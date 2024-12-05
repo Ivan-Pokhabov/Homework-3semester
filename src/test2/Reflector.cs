@@ -19,7 +19,7 @@ public class Reflector
 
         using StreamWriter writer = new ($"{filePath}/{typeInfo.Name}.cs");
 
-        writer.WriteLine($"{typeInfo.Namespace};");
+        writer.WriteLine($"namespace {typeInfo.Namespace};");
 
         var attributes = typeInfo.GetCustomAttributes().ToArray();
         
